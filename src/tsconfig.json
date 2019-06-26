@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "declaration": true,
+    "sourceMap": true,
+    "diagnostics": true,
+    "listFiles": false,
+    "pretty": true,
+    "skipLibCheck": true,
+    "noEmitOnError": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "noImplicitUseStrict": false,
+    "preserveConstEnums": true,
+    "removeComments": false,
+    "noEmit": false
+  },
+  "compileOnSave": true,
+  "bundles": {
+    "tstoolscommon": {
+      "files": [ "./TsToolsCommon.ts" ],
+      "config": {
+        "package": "component",
+        "packageNamespace": "TsToolsCommon",
+        "outDir": "./bundle",
+        "minify": false
+      }
+    }
+  }
+}

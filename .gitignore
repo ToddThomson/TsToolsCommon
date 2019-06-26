@@ -1,0 +1,14 @@
+.vs
+bin
+node_modules/*
+obj
+dist/*
+built/*
+src/**/*.js
+src/**/*.js.map
+src/**/*.d.ts
+tests/*
+ts2js.js
+*.dat
+*.njsproj.user
+*.njsproj.vspscc
