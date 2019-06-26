@@ -40,7 +40,7 @@
     <Content Include="build\tasks\clean.js" />
     <Content Include="build\tasks\release.js" />
     <Content Include="gulpfile.js" />
-    <Content Include="lib\TsHelpers.js" />
+    <Content Include="lib\TsToolsCommon.js" />
     <Content Include="LICENSE" />
     <Content Include="package-lock.json" />
     <Content Include="package.json" />
@@ -57,7 +57,7 @@
     <Folder Include="src\Utils\" />
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="lib\TsHelpers.d.ts" />
+    <TypeScriptCompile Include="lib\TsToolsCommon.d.ts" />
     <TypeScriptCompile Include="src\Ast\Ast.ts" />
     <TypeScriptCompile Include="src\Ast\NodeWalker.ts" />
     <TypeScriptCompile Include="src\Reporting\DiagnosticsReporter.ts" />

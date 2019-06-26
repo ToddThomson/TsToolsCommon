@@ -12,7 +12,7 @@ module.exports = {
     sourceTsConfig: sourceRoot + 'tsconfig.json',
     source: sourceRoot + '**/*.ts',
     output: buildRoot,
-    main: buildRoot + sourceRoot + bundleRoot + 'TsHelpers.js',
-    typings: buildRoot + sourceRoot + bundleRoot + 'TsHelpers.d.ts',
+    main: buildRoot + sourceRoot + bundleRoot + 'TsToolsCommon.js',
+    typings: buildRoot + sourceRoot + bundleRoot + 'TsToolsCommon.d.ts',
     release: releaseRoot
 };

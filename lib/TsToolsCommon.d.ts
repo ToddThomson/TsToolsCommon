@@ -60,13 +60,13 @@ declare namespace TsCore {
     function outputExtension(path: string): string;
 }
 declare namespace Utils {
-    function forEach<T, U>(array: T[], callback: (element: T, index: number) => U): U;
+    function forEach<T, U>(array: ReadonlyArray<T> | undefined, callback: (element: T, index: number) => U | undefined): U | undefined;
     function contains<T>(array: T[], value: T): boolean;
     function hasProperty<T>(map: ts.MapLike<T>, key: string): boolean;
     function clone<T>(object: T): T;
     function map<T, U>(array: T[], f: (x: T) => U): U[];
     function extend<T1, T2>(first: ts.MapLike<T1>, second: ts.MapLike<T2>): ts.MapLike<T1 & T2>;
-    function replaceAt(str: string, index: number, character: any): string;
+    function replaceAt(str: string, index: number, character: string): string;
 }
 export { Ast };
 export { Debug };
