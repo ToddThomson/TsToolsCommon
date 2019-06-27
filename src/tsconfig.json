@@ -1,4 +1,6 @@
 {
+  "compileOnSave": true,
+
   "compilerOptions": {
     "target": "es5",
     "module": "commonjs",
@@ -19,7 +21,15 @@
     "removeComments": false,
     "noEmit": false
   },
-  "compileOnSave": true,
+
+  "include": [
+    "./**/*.ts"
+  ],
+
+  "exclude": [
+    "../node_modules"
+  ],
+
   "bundles": {
     "tstoolscommon": {
       "files": [ "./TsToolsCommon.ts" ],

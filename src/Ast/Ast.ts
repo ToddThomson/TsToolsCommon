@@ -410,21 +410,26 @@ export namespace Ast {
         return ts.SyntaxKind.FirstTriviaToken <= token && token <= ts.SyntaxKind.LastTriviaToken;
     }
 
+    export function isExportProperty( propertySymbol: ts.Symbol ): boolean {
+        let node: ts.Node = propertySymbol.valueDeclaration;
+        while ( node ) {
+            if ( getModifierFlagsNoCache( node ) & ts.ModifierFlags.Export ) {
+                return true;
+            }
+            node = node.parent;
+        }
+
+        return false;
+    }
+
     export function isExportContext( propertySymbol: ts.Symbol ): boolean {
         let node: ts.Node = propertySymbol.valueDeclaration;
 
-        // TJT: Same code. Remove
-
-        //while ( node ) {
-        //    if ( getModifierFlags( node ) & ts.ModifierFlags.Export ) {
-        //        return true;
-        //    }
-        //    node = node.parent;
-        //}
         while ( node ) {
             if ( node.flags & ts.NodeFlags.ExportContext ) {
                 return true;
             }
+
             node = node.parent;
         }
         
@@ -433,10 +438,12 @@ export namespace Ast {
 
     export function isAmbientContext( propertySymbol: ts.Symbol ): boolean {
         let node: ts.Node = propertySymbol.valueDeclaration;
+
         while ( node ) {
             if ( getModifierFlagsNoCache( node ) & ts.ModifierFlags.Ambient ) {
                 return true;
             }
+
             node = node.parent;
         }
         

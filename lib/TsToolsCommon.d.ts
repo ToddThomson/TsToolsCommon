@@ -36,6 +36,7 @@ declare namespace Ast {
     function isKeyword(token: ts.SyntaxKind): boolean;
     function isPuncuation(token: ts.SyntaxKind): boolean;
     function isTrivia(token: ts.SyntaxKind): boolean;
+    function isExportProperty(propertySymbol: ts.Symbol): boolean;
     function isExportContext(propertySymbol: ts.Symbol): boolean;
     function isAmbientContext(propertySymbol: ts.Symbol): boolean;
     function isSourceCodeFile(file: ts.SourceFile): boolean;

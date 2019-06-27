@@ -3,10 +3,6 @@ import * as fs from "fs";
 
 export namespace TsCore {
 
-    export interface WatchedSourceFile extends ts.SourceFile {
-        fileWatcher?: fs.FSWatcher;
-    }
-
     export function fileExtensionIs( path: string, extension: string ): boolean {
         let pathLen = path.length;
         let extLen = extension.length;

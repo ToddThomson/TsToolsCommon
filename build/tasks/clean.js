@@ -3,5 +3,5 @@ var paths = require( '../paths' );
 var del = require( 'del' );
 
 gulp.task( 'clean', function() {
-    return del( paths.output );
+    return del( [paths.output, paths.release] );
 });
