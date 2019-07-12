@@ -22,14 +22,6 @@
     "noEmit": false
   },
 
-  "include": [
-    "./**/*.ts"
-  ],
-
-  "exclude": [
-    "../node_modules"
-  ],
-
   "bundles": {
     "tstoolscommon": {
       "files": [ "./TsToolsCommon.ts" ],

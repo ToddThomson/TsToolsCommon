@@ -1,5 +1,4 @@
 import * as ts from "typescript";
-import * as fs from "fs";
 declare namespace Ast {
     interface ContainerNode extends ts.Node {
         nextContainer?: ContainerNode;
@@ -16,7 +15,6 @@ declare namespace Ast {
         HasLocals = 32,
         IsInterface = 64,
         IsObjectLiteralOrClassExpressionMethod = 128,
-        IsContainerWithLocals = 33,
     }
     function isPrototypeAccessAssignment(expression: ts.Node): boolean;
     function isFunctionLike(node: ts.Node): node is ts.FunctionLike;
@@ -39,18 +37,19 @@ declare namespace Ast {
     function isExportProperty(propertySymbol: ts.Symbol): boolean;
     function isExportContext(propertySymbol: ts.Symbol): boolean;
     function isAmbientContext(propertySymbol: ts.Symbol): boolean;
+    function isAmbientModule(symbol: ts.Symbol): boolean;
     function isSourceCodeFile(file: ts.SourceFile): boolean;
+    function isSourceCodeModule(symbol: ts.Symbol): boolean;
 }
 declare namespace Debug {
     function assert(condition: boolean, message?: string): void;
 }
 declare namespace TsCore {
-    interface WatchedSourceFile extends ts.SourceFile {
-        fileWatcher?: fs.FSWatcher;
-    }
     function fileExtensionIs(path: string, extension: string): boolean;
     const supportedExtensions: string[];
     const moduleFileExtensions: string[];
+    function getIdentifierFromSymbol(symbol: ts.Symbol): ts.Identifier | undefined;
+    function isIdentifier(node: ts.Node): boolean;
     function isSupportedSourceFileName(fileName: string): boolean;
     function getSourceFileOfNode(node: ts.Node): ts.SourceFile;
     function getSourceFileFromSymbol(symbol: ts.Symbol): ts.SourceFile;
@@ -59,6 +58,11 @@ declare namespace TsCore {
     function isAliasSymbolDeclaration(node: ts.Node): boolean;
     function normalizeSlashes(path: string): string;
     function outputExtension(path: string): string;
+    /**
+     * Parse standard project configuration objects: compilerOptions, files.
+     * @param configFilePath
+     */
+    function getProjectConfig(configFilePath: string): ts.ParsedCommandLine;
 }
 declare namespace Utils {
     function forEach<T, U>(array: ReadonlyArray<T> | undefined, callback: (element: T, index: number) => U | undefined): U | undefined;

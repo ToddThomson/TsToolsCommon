@@ -52,14 +52,13 @@
     <Folder Include="build\tasks\" />
     <Folder Include="lib\" />
     <Folder Include="src\" />
-    <Folder Include="src\Ast\" />
+    <Folder Include="src\Typescript\" />
     <Folder Include="src\Reporting\" />
     <Folder Include="src\Utils\" />
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="lib\TsToolsCommon.d.ts" />
-    <TypeScriptCompile Include="src\Ast\Ast.ts" />
-    <TypeScriptCompile Include="src\Ast\NodeWalker.ts" />
+    <TypeScriptCompile Include="src\Typescript\AstHelpers.ts" />
     <TypeScriptCompile Include="src\Reporting\DiagnosticsReporter.ts" />
     <TypeScriptCompile Include="src\Reporting\Logger.ts" />
     <TypeScriptCompile Include="src\Reporting\StatisticsReporter.ts" />
@@ -67,7 +66,7 @@
     <TypeScriptCompile Include="src\Utils\Debug.ts" />
     <TypeScriptCompile Include="src\Utils\Formatter.ts" />
     <TypeScriptCompile Include="src\Utils\Glob.ts" />
-    <TypeScriptCompile Include="src\Utils\TsCore.ts" />
+    <TypeScriptCompile Include="src\Typescript\TsCore.ts" />
     <TypeScriptCompile Include="src\Utils\Utilities.ts" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsToolsV2.targets" />
