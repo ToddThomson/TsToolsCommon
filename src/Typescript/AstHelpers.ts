@@ -14,46 +14,6 @@ export namespace Ast
         nextContainer?: ContainerNode;
     }
 
-    export function getModifierFlagsNoCache( node: ts.Node ): ts.ModifierFlags
-    {
-        let flags = ts.ModifierFlags.None;
-
-        if ( node.modifiers )
-        {
-            for ( const modifier of node.modifiers )
-            {
-                flags |= modifierToFlag( modifier.kind );
-            }
-        }
-
-        if ( node.flags & ts.NodeFlags.NestedNamespace || ( node.kind === ts.SyntaxKind.Identifier && ( <ts.Identifier>node ).isInJSDocNamespace ) )
-        {
-            flags |= ts.ModifierFlags.Export;
-        }
-
-        return flags;
-    }
-
-    export function modifierToFlag( token: ts.SyntaxKind ): ts.ModifierFlags
-    {
-        switch ( token )
-        {
-            case ts.SyntaxKind.StaticKeyword: return ts.ModifierFlags.Static;
-            case ts.SyntaxKind.PublicKeyword: return ts.ModifierFlags.Public;
-            case ts.SyntaxKind.ProtectedKeyword: return ts.ModifierFlags.Protected;
-            case ts.SyntaxKind.PrivateKeyword: return ts.ModifierFlags.Private;
-            case ts.SyntaxKind.AbstractKeyword: return ts.ModifierFlags.Abstract;
-            case ts.SyntaxKind.ExportKeyword: return ts.ModifierFlags.Export;
-            case ts.SyntaxKind.DeclareKeyword: return ts.ModifierFlags.Ambient;
-            case ts.SyntaxKind.ConstKeyword: return ts.ModifierFlags.Const;
-            case ts.SyntaxKind.DefaultKeyword: return ts.ModifierFlags.Default;
-            case ts.SyntaxKind.AsyncKeyword: return ts.ModifierFlags.Async;
-            case ts.SyntaxKind.ReadonlyKeyword: return ts.ModifierFlags.Readonly;
-        }
-
-        return ts.ModifierFlags.None;
-    }
-
     export const enum ContainerFlags
     {
         // The current node is not a container, and no container manipulation should happen before
@@ -83,6 +43,59 @@ export namespace Ast
         IsObjectLiteralOrClassExpressionMethod = 1 << 7,
     }
 
+    export function modifierToFlag( token: ts.SyntaxKind ): ts.ModifierFlags
+    {
+        switch ( token )
+        {
+            case ts.SyntaxKind.StaticKeyword: return ts.ModifierFlags.Static;
+            case ts.SyntaxKind.PublicKeyword: return ts.ModifierFlags.Public;
+            case ts.SyntaxKind.ProtectedKeyword: return ts.ModifierFlags.Protected;
+            case ts.SyntaxKind.PrivateKeyword: return ts.ModifierFlags.Private;
+            case ts.SyntaxKind.AbstractKeyword: return ts.ModifierFlags.Abstract;
+            case ts.SyntaxKind.ExportKeyword: return ts.ModifierFlags.Export;
+            case ts.SyntaxKind.DeclareKeyword: return ts.ModifierFlags.Ambient;
+            case ts.SyntaxKind.ConstKeyword: return ts.ModifierFlags.Const;
+            case ts.SyntaxKind.DefaultKeyword: return ts.ModifierFlags.Default;
+            case ts.SyntaxKind.AsyncKeyword: return ts.ModifierFlags.Async;
+            case ts.SyntaxKind.ReadonlyKeyword: return ts.ModifierFlags.Readonly;
+        }
+
+        return ts.ModifierFlags.None;
+    }
+
+    export function getExternalModuleName( node: AnyImportOrExport ): ts.Expression | undefined
+    {
+        switch ( node.kind )
+        {
+            case ts.SyntaxKind.ImportDeclaration:
+            case ts.SyntaxKind.ExportDeclaration:
+                return node.moduleSpecifier;
+            case ts.SyntaxKind.ImportEqualsDeclaration:
+                return node.moduleReference.kind === ts.SyntaxKind.ExternalModuleReference ? node.moduleReference.expression : undefined;
+            default:
+                return undefined;
+        }
+    }
+    export function getModifierFlagsNoCache( node: ts.Node ): ts.ModifierFlags
+    {
+        let flags = ts.ModifierFlags.None;
+
+        if ( node.modifiers )
+        {
+            for ( const modifier of node.modifiers )
+            {
+                flags |= modifierToFlag( modifier.kind );
+            }
+        }
+
+        if ( node.flags & ts.NodeFlags.NestedNamespace || ( node.kind === ts.SyntaxKind.Identifier && ( <ts.Identifier>node ).isInJSDocNamespace ) )
+        {
+            flags |= ts.ModifierFlags.Export;
+        }
+
+        return flags;
+    }
+
     export function getIdentifierFromSymbol( symbol: ts.Symbol ): ts.Identifier | undefined
     {
         let decls = symbol.getDeclarations();
@@ -94,6 +107,23 @@ export namespace Ast
             if ( identifier )
             {
                 return identifier;
+            }
+        }
+
+        return undefined;
+    }
+
+    export function getSourceFileFromAnyImportExportNode( node: ts.Node, checker: ts.TypeChecker ): ts.SourceFile | undefined
+    {
+        let moduleName = Ast.getExternalModuleName( node as Ast.AnyImportOrExport );
+
+        if ( moduleName && moduleName.kind === ts.SyntaxKind.StringLiteral )
+        {
+            let symbol = checker.getSymbolAtLocation( moduleName );
+
+            if ( symbol && symbol.declarations && symbol.declarations[0] )
+            {
+                return symbol.declarations[0].getSourceFile();
             }
         }
 
@@ -122,163 +152,6 @@ export namespace Ast
         }
 
         return undefined;
-    }
-
-    // An alias symbol is created by one of the following declarations:
-    // import <symbol> = ...
-    // import <symbol> from ...
-    // import * as <symbol> from ...
-    // import { x as <symbol> } from ...
-    // export { x as <symbol> } from ...
-    // export = ...
-    // export default ...
-    export function isAliasSymbolDeclaration( node: ts.Node ): boolean
-    {
-        return node.kind === ts.SyntaxKind.ImportEqualsDeclaration ||
-            node.kind === ts.SyntaxKind.ImportClause && !!( <ts.ImportClause>node ).name ||
-            node.kind === ts.SyntaxKind.NamespaceImport ||
-            node.kind === ts.SyntaxKind.ImportSpecifier ||
-            node.kind === ts.SyntaxKind.ExportSpecifier ||
-            node.kind === ts.SyntaxKind.ExportAssignment && ( <ts.ExportAssignment>node ).expression.kind === ts.SyntaxKind.Identifier;
-    }
-
-    export function isIdentifier( node: ts.Node ): boolean
-    {
-        return ( node.kind === ts.SyntaxKind.Identifier );
-    }
-
-    export function isPrototypeAccessAssignment( expression: ts.Node ): boolean
-    {
-
-        if ( expression.kind !== ts.SyntaxKind.BinaryExpression )
-        {
-            return false;
-        }
-
-        const expr = <ts.BinaryExpression>expression;
-
-        if ( expr.operatorToken.kind !== ts.SyntaxKind.EqualsToken || expr.left.kind !== ts.SyntaxKind.PropertyAccessExpression )
-        {
-            return false;
-        }
-
-        const lhs = <ts.PropertyAccessExpression>expr.left;
-
-        if ( lhs.expression.kind === ts.SyntaxKind.PropertyAccessExpression )
-        {
-            // chained dot, e.g. x.y.z = expr; this var is the 'x.y' part
-            const innerPropertyAccess = <ts.PropertyAccessExpression>lhs.expression;
-
-            if ( innerPropertyAccess.expression.kind === ts.SyntaxKind.Identifier && innerPropertyAccess.name.text === "prototype" )
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    export function isFunctionLike( node: ts.Node ): node is ts.FunctionLike
-    {
-        return node && isFunctionLikeKind( node.kind );
-    }
-
-    export function isFunctionLikeDeclarationKind( kind: ts.SyntaxKind ): boolean
-    {
-        switch ( kind )
-        {
-            case ts.SyntaxKind.FunctionDeclaration:
-            case ts.SyntaxKind.MethodDeclaration:
-            case ts.SyntaxKind.Constructor:
-            case ts.SyntaxKind.GetAccessor:
-            case ts.SyntaxKind.SetAccessor:
-            case ts.SyntaxKind.FunctionExpression:
-            case ts.SyntaxKind.ArrowFunction:
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    export function isFunctionLikeKind( kind: ts.SyntaxKind ): boolean
-    {
-        switch ( kind )
-        {
-            case ts.SyntaxKind.MethodSignature:
-            case ts.SyntaxKind.CallSignature:
-            case ts.SyntaxKind.ConstructSignature:
-            case ts.SyntaxKind.IndexSignature:
-            case ts.SyntaxKind.FunctionType:
-            case ts.SyntaxKind.JSDocFunctionType:
-            case ts.SyntaxKind.ConstructorType:
-                return true;
-            default:
-                return isFunctionLikeDeclarationKind( kind );
-        }
-    }
-
-    export function isObjectLiteralOrClassExpressionMethod( node: ts.Node ): node is ts.MethodDeclaration
-    {
-        return node.kind === ts.SyntaxKind.MethodDeclaration &&
-            ( node.parent.kind === ts.SyntaxKind.ObjectLiteralExpression ||
-                node.parent.kind === ts.SyntaxKind.ClassExpression );
-    }
-
-    export function isInterfaceInternal( symbol: ts.Symbol ): boolean
-    {
-        if ( symbol && ( symbol.flags & ts.SymbolFlags.Interface ) )
-        {
-            if ( symbol.valueDeclaration )
-            {
-                let flags = getModifierFlagsNoCache( symbol.valueDeclaration );
-
-                //if ( !( flags & ts.ModifierFlags.Export ) ) {
-                //    return true;
-                //}
-
-                // FUTURE: How to make interfaces internal by convention?
-                return false;
-            }
-        }
-
-        return false;
-    }
-
-    export function isClassInternal( symbol: ts.Symbol ): boolean
-    {
-        if ( symbol && ( symbol.flags & ts.SymbolFlags.Class ) )
-        {
-
-            // If the class is from an extern API or ambient then it cannot be considered internal.
-            if ( Ast.isExportContext( symbol ) || Ast.isAmbientContext( symbol ) )
-            {
-                return false;
-            }
-
-            // A class always has a value declaration
-            let flags = getModifierFlagsNoCache( symbol.valueDeclaration );
-
-            // By convention, "Internal" classes are ones that are not exported.
-            if ( !( flags & ts.ModifierFlags.Export ) )
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    export function isClassAbstract( classSymbol: ts.Symbol ): boolean
-    {
-        if ( classSymbol && classSymbol.valueDeclaration )
-        {
-            if ( getModifierFlagsNoCache( classSymbol.valueDeclaration ) & ts.ModifierFlags.Abstract )
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     export function getClassHeritageProperties( classNodeU: ts.Node, checker: ts.TypeChecker ): ts.Symbol[]
@@ -527,9 +400,171 @@ export namespace Ast
         return undefined;
     }
 
+    // An alias symbol is created by one of the following declarations:
+    // import <symbol> = ...
+    // import <symbol> from ...
+    // import * as <symbol> from ...
+    // import { x as <symbol> } from ...
+    // export { x as <symbol> } from ...
+    // export = ...
+    // export default ...
+    export function isAliasSymbolDeclaration( node: ts.Node ): boolean
+    {
+        return node.kind === ts.SyntaxKind.ImportEqualsDeclaration ||
+            node.kind === ts.SyntaxKind.ImportClause && !!( <ts.ImportClause>node ).name ||
+            node.kind === ts.SyntaxKind.NamespaceImport ||
+            node.kind === ts.SyntaxKind.ImportSpecifier ||
+            node.kind === ts.SyntaxKind.ExportSpecifier ||
+            node.kind === ts.SyntaxKind.ExportAssignment && ( <ts.ExportAssignment>node ).expression.kind === ts.SyntaxKind.Identifier;
+    }
+
+    export function isIdentifier( node: ts.Node ): boolean
+    {
+        return ( node.kind === ts.SyntaxKind.Identifier );
+    }
+
+    export function isPrototypeAccessAssignment( expression: ts.Node ): boolean
+    {
+
+        if ( expression.kind !== ts.SyntaxKind.BinaryExpression )
+        {
+            return false;
+        }
+
+        const expr = <ts.BinaryExpression>expression;
+
+        if ( expr.operatorToken.kind !== ts.SyntaxKind.EqualsToken || expr.left.kind !== ts.SyntaxKind.PropertyAccessExpression )
+        {
+            return false;
+        }
+
+        const lhs = <ts.PropertyAccessExpression>expr.left;
+
+        if ( lhs.expression.kind === ts.SyntaxKind.PropertyAccessExpression )
+        {
+            // chained dot, e.g. x.y.z = expr; this var is the 'x.y' part
+            const innerPropertyAccess = <ts.PropertyAccessExpression>lhs.expression;
+
+            if ( innerPropertyAccess.expression.kind === ts.SyntaxKind.Identifier && innerPropertyAccess.name.text === "prototype" )
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    export function isFunctionLike( node: ts.Node ): node is ts.FunctionLike
+    {
+        return node && isFunctionLikeKind( node.kind );
+    }
+
+    export function isFunctionLikeDeclarationKind( kind: ts.SyntaxKind ): boolean
+    {
+        switch ( kind )
+        {
+            case ts.SyntaxKind.FunctionDeclaration:
+            case ts.SyntaxKind.MethodDeclaration:
+            case ts.SyntaxKind.Constructor:
+            case ts.SyntaxKind.GetAccessor:
+            case ts.SyntaxKind.SetAccessor:
+            case ts.SyntaxKind.FunctionExpression:
+            case ts.SyntaxKind.ArrowFunction:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    export function isFunctionLikeKind( kind: ts.SyntaxKind ): boolean
+    {
+        switch ( kind )
+        {
+            case ts.SyntaxKind.MethodSignature:
+            case ts.SyntaxKind.CallSignature:
+            case ts.SyntaxKind.ConstructSignature:
+            case ts.SyntaxKind.IndexSignature:
+            case ts.SyntaxKind.FunctionType:
+            case ts.SyntaxKind.JSDocFunctionType:
+            case ts.SyntaxKind.ConstructorType:
+                return true;
+            default:
+                return isFunctionLikeDeclarationKind( kind );
+        }
+    }
+
+    export function isObjectLiteralOrClassExpressionMethod( node: ts.Node ): node is ts.MethodDeclaration
+    {
+        return node.kind === ts.SyntaxKind.MethodDeclaration &&
+            ( node.parent.kind === ts.SyntaxKind.ObjectLiteralExpression ||
+                node.parent.kind === ts.SyntaxKind.ClassExpression );
+    }
+
+    export function isInterfaceInternal( symbol: ts.Symbol ): boolean
+    {
+        if ( symbol && ( symbol.flags & ts.SymbolFlags.Interface ) )
+        {
+            if ( symbol.valueDeclaration )
+            {
+                let flags = getModifierFlagsNoCache( symbol.valueDeclaration );
+
+                //if ( !( flags & ts.ModifierFlags.Export ) ) {
+                //    return true;
+                //}
+
+                // FUTURE: How to make interfaces internal by convention?
+                return false;
+            }
+        }
+
+        return false;
+    }
+
+    export function isClassInternal( symbol: ts.Symbol ): boolean
+    {
+        if ( symbol && ( symbol.flags & ts.SymbolFlags.Class ) )
+        {
+
+            // If the class is from an extern API or ambient then it cannot be considered internal.
+            if ( Ast.isExportContext( symbol ) || Ast.isAmbientContext( symbol ) )
+            {
+                return false;
+            }
+
+            // A class always has a value declaration
+            let flags = getModifierFlagsNoCache( symbol.valueDeclaration );
+
+            // By convention, "Internal" classes are ones that are not exported.
+            if ( !( flags & ts.ModifierFlags.Export ) )
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    export function isClassAbstract( classSymbol: ts.Symbol ): boolean
+    {
+        if ( classSymbol && classSymbol.valueDeclaration )
+        {
+            if ( getModifierFlagsNoCache( classSymbol.valueDeclaration ) & ts.ModifierFlags.Abstract )
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     export function isKeyword( token: ts.SyntaxKind ): boolean
     {
         return ts.SyntaxKind.FirstKeyword <= token && token <= ts.SyntaxKind.LastKeyword;
+    }
+
+    export function isNamespaceImport( node: ts.Node ): boolean
+    {
+        return node.kind === ts.SyntaxKind.NamespaceImport;
     }
 
     export function isPuncuation( token: ts.SyntaxKind ): boolean

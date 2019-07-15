@@ -1,6 +1,6 @@
-﻿import { Ast } from "./Ast/Ast"
+﻿import { Ast } from "./Typescript/AstHelpers"
+import { TsCore } from "./Typescript/TsCore"
 import { Debug } from "./Utils/Debug"
-import { TsCore } from "./Utils/TsCore"
 import { Utils } from "./Utils/Utilities"
 
 export { Ast }
