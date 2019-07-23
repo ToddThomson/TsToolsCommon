@@ -46,6 +46,9 @@
     <Content Include="package.json" />
     <Content Include="README.md" />
     <Content Include="src\tsconfig.json" />
+    <Content Include="src\Typescript\TransformHelpers.ts">
+      <SubType>Code</SubType>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="build\" />
@@ -66,7 +69,7 @@
     <TypeScriptCompile Include="src\Utils\Debug.ts" />
     <TypeScriptCompile Include="src\Utils\Formatter.ts" />
     <TypeScriptCompile Include="src\Utils\Glob.ts" />
-    <TypeScriptCompile Include="src\Typescript\TsCore.ts" />
+    <TypeScriptCompile Include="src\Typescript\Core.ts" />
     <TypeScriptCompile Include="src\Utils\Utilities.ts" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsToolsV2.targets" />

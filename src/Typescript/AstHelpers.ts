@@ -7,7 +7,7 @@
  */
 export namespace Ast
 {
-    export type AnyImportOrExport = ts.ImportDeclaration | ts.ImportEqualsDeclaration | ts.ExportDeclaration;;
+    export type AnyImportOrExport = ts.ImportDeclaration | ts.ImportEqualsDeclaration | ts.ExportDeclaration;
 
     export interface ContainerNode extends ts.Node
     {
@@ -113,7 +113,7 @@ export namespace Ast
         return undefined;
     }
 
-    export function getSourceFileFromAnyImportExportNode( node: ts.Node, checker: ts.TypeChecker ): ts.SourceFile | undefined
+    export function getSourceFileFromAnyImportExportNode( node: AnyImportOrExport, checker: ts.TypeChecker ): ts.SourceFile | undefined
     {
         let moduleName = Ast.getExternalModuleName( node as Ast.AnyImportOrExport );
 
