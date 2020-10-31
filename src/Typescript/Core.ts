@@ -4,6 +4,14 @@ import * as path from "path"
 
 export namespace TsCore
 {
+    export interface TsConfigFile
+    {
+        errors: ts.Diagnostic[];
+        config?: any;
+        fileName?: string;
+        basePath?: string;
+   }
+
     /** Does nothing. */
     export function noop( _?: {} | null | undefined ): void { } // tslint:disable-line no-empty
 
@@ -33,6 +41,19 @@ export namespace TsCore
         let pathLen = path.length;
         let extLen = extension.length;
         return pathLen > extLen && path.substr( pathLen - extLen, extLen ) === extension;
+    }
+
+    export function fileExtensionIsOneOf( path: string, extensions: ReadonlyArray<string> ): boolean
+    {
+        for ( const extension of extensions )
+        {
+            if ( fileExtensionIs( path, extension ) )
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     export const supportedExtensions = [".ts", ".tsx", ".d.ts"];
@@ -92,39 +113,48 @@ export namespace TsCore
         return path.replace( /\.ts/, ".js" );
     }
 
-    /**
-     * Parse standard project configuration objects: compilerOptions, files.
-     * @param configFilePath
-     */
-    export function getProjectConfig( configFilePath: string ): ts.ParsedCommandLine
+    export function getConfigFileName( configFilePath: string ): string | undefined
     {
-        var configFileDir: string;
-        var configFileName: string;
-
         try
         {
             var isConfigDirectory = fs.lstatSync( configFilePath ).isDirectory();
         }
         catch ( e )
         {
-            let diagnostic = TsCore.createDiagnostic( { code: 6064, category: ts.DiagnosticCategory.Error, key: "Cannot_read_project_path_0_6064", message: "Cannot read project path '{0}'." }, configFilePath );
-
-            return {
-                options: undefined,
-                fileNames: [],
-                errors: [diagnostic]
-            };
+            return undefined;
         }
 
         if ( isConfigDirectory )
         {
-            configFileDir = configFilePath;
-            configFileName = path.join( configFilePath, "tsconfig.json" );
+            return path.join( configFilePath, "tsconfig.json" );
         }
         else
         {
-            configFileDir = path.dirname( configFilePath );
-            configFileName = configFilePath;
+            return configFilePath;
+        }
+    }
+
+    /**
+     * Parse standard project configuration objects: compilerOptions, files.
+     * @param configFilePath
+     */
+    export function readConfigFile( configFilePath: string ): TsCore.TsConfigFile
+    {
+        let configFileName = TsCore.getConfigFileName( configFilePath );
+
+        if ( !configFileName )
+        {
+            let diagnostic = TsCore.createDiagnostic(
+                {
+                    code: 6064,
+                    category: ts.DiagnosticCategory.Error,
+                    key: "Cannot_read_project_path_0_6064",
+                    message: "Cannot read project path '{0}'."
+                }, configFilePath );
+
+            return {
+                errors: [diagnostic]
+            }
         }
 
         let readConfigResult = ts.readConfigFile( configFileName, ( fileName ) =>
@@ -135,14 +165,33 @@ export namespace TsCore
         if ( readConfigResult.error )
         {
             return {
-                options: undefined,
-                fileNames: [],
                 errors: [readConfigResult.error]
             };
         }
 
-        let configObject = readConfigResult.config;
+        let fullFileName = path.resolve( configFileName );
 
-        return ts.parseJsonConfigFileContent( configObject, ts.sys, configFileDir );
+        return {
+            fileName: fullFileName,
+            basePath: path.dirname( fullFileName ),
+            config: readConfigResult.config,
+            errors: [],
+        }
+    }
+
+    export function getProjectConfig( configFilePath: string ): ts.ParsedCommandLine
+    {
+        let configFile = readConfigFile( configFilePath );
+
+        if ( configFile.errors.length > 0 )
+        {
+            return {
+                options: undefined,
+                fileNames: [],
+                errors: configFile.errors
+            }
+        }
+
+        return ts.parseJsonConfigFileContent( configFile.config, ts.sys, configFile.basePath, undefined, configFile.fileName );
     }
 }

@@ -42,7 +42,6 @@
     <Content Include="gulpfile.js" />
     <Content Include="lib\TsToolsCommon.js" />
     <Content Include="LICENSE" />
-    <Content Include="package-lock.json" />
     <Content Include="package.json" />
     <Content Include="README.md" />
     <Content Include="src\tsconfig.json" />

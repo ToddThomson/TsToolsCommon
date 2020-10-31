@@ -1,12 +1,16 @@
 ﻿import * as ts from "typescript";
 
-export namespace Utils {
-
-    export function forEach<T, U>( array: ReadonlyArray<T> | undefined, callback: ( element: T, index: number ) => U | undefined ): U | undefined {
-        if ( array ) {
-            for ( let i = 0, len = array.length; i < len; i++ ) {
+export namespace Utils
+{
+    export function forEach<T, U>( array: ReadonlyArray<T> | undefined, callback: ( element: T, index: number ) => U | undefined ): U | undefined
+    {
+        if ( array )
+        {
+            for ( let i = 0, len = array.length; i < len; i++ )
+            {
                 let result = callback( array[i], i );
-                if ( result ) {
+                if ( result )
+                {
                     return result;
                 }
             }
@@ -15,10 +19,14 @@ export namespace Utils {
         return undefined;
     }
 
-    export function contains<T>( array: T[], value: T ): boolean {
-        if ( array ) {
-            for ( let v of array ) {
-                if ( v === value ) {
+    export function contains<T>( array: T[], value: T ): boolean
+    {
+        if ( array )
+        {
+            for ( let v of array )
+            {
+                if ( v === value )
+                {
                     return true;
                 }
             }
@@ -29,23 +37,19 @@ export namespace Utils {
 
     let hasOwnProperty = Object.prototype.hasOwnProperty;
 
-    export function hasProperty<T>( map: ts.MapLike<T>, key: string ): boolean {
+    export function hasProperty<T>( map: ts.MapLike<T>, key: string ): boolean
+    {
         return hasOwnProperty.call( map, key );
     }
 
-    export function clone<T>( object: T ): T {
-        let result: any = {};
-        for ( let id in object ) {
-            result[id] = ( <any>object )[id];
-        }
-        return <T>result;
-    }
-
-    export function map<T, U>( array: T[], f: ( x: T ) => U ): U[] {
+    export function map<T, U>( array: T[], f: ( x: T ) => U ): U[]
+    {
         let result: U[];
-        if ( array ) {
+        if ( array )
+        {
             result = [];
-            for ( let v of array ) {
+            for ( let v of array )
+            {
                 result.push( f( v ) );
             }
         }
@@ -53,23 +57,26 @@ export namespace Utils {
         return result;
     }
 
-    export function extend<T1, T2>( first: ts.MapLike<T1>, second: ts.MapLike<T2> ): ts.MapLike<T1 & T2> {
+    export function extend( first: any, second: any ): any
+    {
+        let result: any = {};
 
-        let sentinal = 1;
-        let result: ts.MapLike<T1 & T2> = {};
-        
-        for ( let id in first ) {
+        for ( let id in first )
+        {
             ( result as any )[id] = first[id];
         }
-        for ( let id in second ) {
-            if ( !hasProperty( result, id ) ) {
+        for ( let id in second )
+        {
+            if ( !hasProperty( result, id ) )
+            {
                 ( result as any )[id] = second[id];
             }
         }
         return result;
     }
 
-    export function replaceAt( str: string, index: number, character: string ) {
+    export function replaceAt( str: string, index: number, character: string )
+    {
         return str.substr( 0, index ) + character + str.substr( index + character.length );
     }
 }

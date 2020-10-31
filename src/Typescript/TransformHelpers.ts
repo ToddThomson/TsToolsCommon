@@ -4,6 +4,7 @@ import { TsCore } from "./Core"
 export namespace Factory
 {
     export const nullTransformationContext: ts.TransformationContext = {
+        get factory() { return ts.factory; },
         enableEmitNotification: TsCore.noop,
         enableSubstitution: TsCore.noop,
         endLexicalEnvironment: TsCore.returnUndefined,
@@ -31,9 +32,11 @@ export namespace Factory
         {
             if ( node )
             {
-                node.parent = clone;
-                node.pos = -1;
-                node.end = -1;
+                // FIXME:
+
+                //node.parent = clone;
+                //node.pos = -1;
+                //node.end = -1;
 
                 return ts.visitEachChild( node, visitor, nullTransformationContext );
             }
@@ -42,9 +45,12 @@ export namespace Factory
         }
 
         const clone = ts.getMutableClone( node );
-        clone.pos = -1;
-        clone.end = -1;
-        clone.parent = undefined;
+
+        // FIXME:
+
+        //clone.pos = -1;
+        //clone.end = -1;
+        //clone.parent = undefined;
 
         return ts.visitNode( node, visitor );// nullTransformationContext );
     }

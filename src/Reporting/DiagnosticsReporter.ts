@@ -1,6 +1,6 @@
 ﻿import { Logger } from "./Logger";
 import * as ts from "typescript";
-import chalk from "chalk";
+import * as chalk from "chalk";
 
 export class DiagnosticsReporter {
     
