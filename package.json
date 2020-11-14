@@ -1,27 +1,27 @@
 {
   "name": "tstoolscommon",
-  "version": "4.0.0-beta.1",
+  "version": "4.1.0-dev.1",
   "author": "Todd Thomson <todd.thomson@me.com>",
   "description": "TsTools common Typescript helper functions.",
   "license": "MIT",
-  "main": "./lib/tstoolscommon.js",
-  "types": "./lib/tstoolscommon.d.ts",
-  "typings": "./lib/tstoolscommon.d.ts",
+  "main": "./lib/TsToolsCommon.js",
+  "types": "./lib/TsToolsCommon.d.ts",
+  "typings": "./lib/TsToolsCommon.d.ts",
   "engines": {
     "node": ">= 14.0.0"
   },
   "dependencies": {
-    "@types/node": "^14.14.6",
+    "@types/node": "^14.14.7",
     "@types/prettier": "^2.1.5",
     "chalk": "^4.1.0",
     "prettier": "^2.1.2",
-    "typescript": "^4.0.5"
+    "typescript": "^4.1.1-rc"
   },
   "devDependencies": {
     "del": "^6.0.0",
     "gulp": "^4.0.2",
     "gulp-hub": "^4.2.0",
-    "tsproject": "^4.0.0-beta.3"
+    "tsproject": "^4.1.0-dev.1"
   },
   "keywords": [
     "typescript",
@@ -37,7 +37,7 @@
   "bugs": "https://github.com/toddthomson/tstoolscommon/issues",
   "scripts": {
     "prebuild": "tsc -v",
-    "build": "tsc --build ./src -v",
-    "clean": "tsc --build ./src --clean"
+    "build": "tsc --build ./src -v && gulp build",
+    "clean": "tsc --build ./src --clean && gulp clean"
   }
 }

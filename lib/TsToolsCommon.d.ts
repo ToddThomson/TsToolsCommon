@@ -15,9 +15,15 @@ declare namespace Ast {
         IsInterface = 64,
         IsObjectLiteralOrClassExpressionMethod = 128
     }
+    function modifiersToFlags(modifiers: ts.NodeArray<ts.Modifier> | undefined): ts.ModifierFlags;
     function modifierToFlag(token: ts.SyntaxKind): ts.ModifierFlags;
     function getExternalModuleName(node: AnyImportOrExport): ts.Expression | undefined;
-    function getModifierFlagsNoCache(node: ts.Node): ts.ModifierFlags;
+    /**
+     * Gets the ModifierFlags for syntactic modifiers on the provided node. The modifier flags cache on the node is ignored.
+     *
+     * NOTE: This function does not use `parent` pointers and will not include modifiers from JSDoc.
+     */
+    function getSyntacticModifierFlagsNoCache(node: ts.Node): ts.ModifierFlags;
     function getIdentifierFromSymbol(symbol: ts.Symbol): ts.Identifier | undefined;
     function getSourceFileFromAnyImportExportNode(node: AnyImportOrExport, checker: ts.TypeChecker): ts.SourceFile | undefined;
     function getSourceFileOfNode(node: ts.Node): ts.SourceFile;
@@ -43,6 +49,7 @@ declare namespace Ast {
     function isNamespaceImport(node: ts.Node): boolean;
     function isPuncuation(token: ts.SyntaxKind): boolean;
     function isTrivia(token: ts.SyntaxKind): boolean;
+    function isExportVariable(propertySymbol: ts.Symbol): boolean;
     function isExportProperty(propertySymbol: ts.Symbol): boolean;
     function isExportContext(propertySymbol: ts.Symbol): boolean;
     function isAmbientContext(propertySymbol: ts.Symbol): boolean;
@@ -96,7 +103,7 @@ declare namespace Utils {
     function contains<T>(array: T[], value: T): boolean;
     function hasProperty<T>(map: ts.MapLike<T>, key: string): boolean;
     function map<T, U>(array: T[], f: (x: T) => U): U[];
-    function extend(first: any, second: any): any;
+    function extend<T1, T2>(first: T1, second: T2): T1 & T2;
     function replaceAt(str: string, index: number, character: string): string;
 }
 export { Ast };

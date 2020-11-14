@@ -3,7 +3,7 @@
 /**
  * Typescript AST helper functions.
  * 
- * @remarks Current with Typescript version 3.5.2 AST code found in utilities.ts
+ * @remarks Current with Typescript version 4.0 AST code found in utilities.ts
  */
 export namespace Ast
 {
@@ -43,6 +43,19 @@ export namespace Ast
         IsObjectLiteralOrClassExpressionMethod = 1 << 7,
     }
 
+    export function modifiersToFlags( modifiers: ts.NodeArray<ts.Modifier> | undefined )
+    {
+        let flags = ts.ModifierFlags.None;
+        if ( modifiers )
+        {
+            for ( const modifier of modifiers )
+            {
+                flags |= modifierToFlag( modifier.kind );
+            }
+        }
+        return flags;
+    }
+
     export function modifierToFlag( token: ts.SyntaxKind ): ts.ModifierFlags
     {
         switch ( token )
@@ -76,17 +89,15 @@ export namespace Ast
                 return undefined;
         }
     }
-    export function getModifierFlagsNoCache( node: ts.Node ): ts.ModifierFlags
-    {
-        let flags = ts.ModifierFlags.None;
 
-        if ( node.modifiers )
-        {
-            for ( const modifier of node.modifiers )
-            {
-                flags |= modifierToFlag( modifier.kind );
-            }
-        }
+    /**
+     * Gets the ModifierFlags for syntactic modifiers on the provided node. The modifier flags cache on the node is ignored.
+     *
+     * NOTE: This function does not use `parent` pointers and will not include modifiers from JSDoc.
+     */
+    export function getSyntacticModifierFlagsNoCache( node: ts.Node ): ts.ModifierFlags
+    {
+        let flags = modifiersToFlags( node.modifiers );
 
         if ( node.flags & ts.NodeFlags.NestedNamespace || ( node.kind === ts.SyntaxKind.Identifier && ( <ts.Identifier>node ).isInJSDocNamespace ) )
         {
@@ -223,7 +234,7 @@ export namespace Ast
 
             if ( abstractTypeSymbol.valueDeclaration )
             {
-                if ( getModifierFlagsNoCache( abstractTypeSymbol.valueDeclaration ) & ts.ModifierFlags.Abstract )
+                if ( getSyntacticModifierFlagsNoCache( abstractTypeSymbol.valueDeclaration ) & ts.ModifierFlags.Abstract )
                 {
                     const props: ts.Symbol[] = abstractType.getProperties();
 
@@ -506,7 +517,7 @@ export namespace Ast
         {
             if ( symbol.valueDeclaration )
             {
-                let flags = getModifierFlagsNoCache( symbol.valueDeclaration );
+                let flags = getSyntacticModifierFlagsNoCache( symbol.valueDeclaration );
 
                 //if ( !( flags & ts.ModifierFlags.Export ) ) {
                 //    return true;
@@ -532,7 +543,7 @@ export namespace Ast
             }
 
             // A class always has a value declaration
-            let flags = getModifierFlagsNoCache( symbol.valueDeclaration );
+            let flags = getSyntacticModifierFlagsNoCache( symbol.valueDeclaration );
 
             // By convention, "Internal" classes are ones that are not exported.
             if ( !( flags & ts.ModifierFlags.Export ) )
@@ -548,7 +559,7 @@ export namespace Ast
     {
         if ( classSymbol && classSymbol.valueDeclaration )
         {
-            if ( getModifierFlagsNoCache( classSymbol.valueDeclaration ) & ts.ModifierFlags.Abstract )
+            if ( getSyntacticModifierFlagsNoCache( classSymbol.valueDeclaration ) & ts.ModifierFlags.Abstract )
             {
                 return true;
             }
@@ -577,12 +588,30 @@ export namespace Ast
         return ts.SyntaxKind.FirstTriviaToken <= token && token <= ts.SyntaxKind.LastTriviaToken;
     }
 
+    export function isExportVariable( propertySymbol: ts.Symbol ): boolean
+    {
+        let node: ts.Node = propertySymbol.valueDeclaration;
+
+        while ( node )
+        {
+            if ( getSyntacticModifierFlagsNoCache( node ) & ts.ModifierFlags.Export )
+            {
+                return true;
+            }
+
+            node = node.parent;
+        }
+
+        return false;
+    }
+
     export function isExportProperty( propertySymbol: ts.Symbol ): boolean
     {
         let node: ts.Node = propertySymbol.valueDeclaration;
+
         while ( node )
         {
-            if ( getModifierFlagsNoCache( node ) & ts.ModifierFlags.Export )
+            if ( getSyntacticModifierFlagsNoCache( node ) & ts.ModifierFlags.Export )
             {
                 return true;
             }
@@ -615,7 +644,7 @@ export namespace Ast
 
         while ( node )
         {
-            if ( getModifierFlagsNoCache( node ) & ts.ModifierFlags.Ambient )
+            if ( getSyntacticModifierFlagsNoCache( node ) & ts.ModifierFlags.Ambient )
             {
                 return true;
             }

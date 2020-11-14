@@ -57,23 +57,44 @@ export namespace Utils
         return result;
     }
 
-    export function extend( first: any, second: any ): any
+    export function extend<T1, T2>( first: T1, second: T2 ): T1 & T2
     {
-        let result: any = {};
-
-        for ( let id in first )
+        const result: T1 & T2 = <any>{};
+        for ( const id in second )
         {
-            ( result as any )[id] = first[id];
-        }
-        for ( let id in second )
-        {
-            if ( !hasProperty( result, id ) )
+            if ( hasOwnProperty.call( second, id ) )
             {
-                ( result as any )[id] = second[id];
+                ( result as any )[id] = ( second as any )[id];
             }
         }
+
+        for ( const id in first )
+        {
+            if ( hasOwnProperty.call( first, id ) )
+            {
+                ( result as any )[id] = ( first as any )[id];
+            }
+        }
+
         return result;
     }
+    //export function extend( first: any, second: any ): any
+    //{
+    //    let result: any = {};
+
+    //    for ( let id in first )
+    //    {
+    //        ( result as any )[id] = first[id];
+    //    }
+    //    for ( let id in second )
+    //    {
+    //        if ( !hasProperty( result, id ) )
+    //        {
+    //            ( result as any )[id] = second[id];
+    //        }
+    //    }
+    //    return result;
+    //}
 
     export function replaceAt( str: string, index: number, character: string )
     {
